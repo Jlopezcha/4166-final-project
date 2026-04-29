@@ -1,15 +1,15 @@
 import prisma from '../config/db.js';
 
-export async function findAllBooks() {
-    return prisma.Books.findMany();
+export async function findAllPapers() {
+    return prisma.Academic_Papers.findMany();
 }
 
-export async function findBooksById(id) {
-    return await prisma.Books.findUnique({where: {id}});
+export async function findPaperById(id) {
+    return await prisma.Academic_Papers.findUnique({where: {id}});
 }
 
 export async function create(data) {
-    const newProduct = await prisma.Books.create({
+    const newProduct = await prisma.Academic_Papers.create({
         data: {
             name: data.name,
             authors: {
@@ -18,7 +18,7 @@ export async function create(data) {
                     create: {name: aName}
                 })),
             },
-            genre: data.genre,
+            topic: data.topic,
             availability: data.availability,
             avg_rating: data.avg_rating,
             total_reviews: data.total_reviews
@@ -29,7 +29,7 @@ export async function create(data) {
 
 export async function update(id, data) {
     try {
-      const updatedProduct = await prisma.Books.update({
+      const updatedProduct = await prisma.Academic_Papers.update({
         where: { id },
         data: data,
       });
@@ -42,7 +42,7 @@ export async function update(id, data) {
 
 export async function remove(id) {
     try {
-      const deletedProduct = await prisma.Books.delete({
+      const deletedProduct = await prisma.Academic_Papers.delete({
         where: { id },
       });
       return deletedProduct;

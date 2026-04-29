@@ -141,5 +141,252 @@ export const validateUpdateTechBody = [
     handleValidationErrors,
 ]
 
+export const validateBooksBody = [
+  body('name')
+    .exists({values: 'falsy'})
+    .withMessage('Name is required')
+    .bail()
+    .trim()
+    .escape()
+    .isString()
+    .withMessage('Name must be a string')
+    .bail()
+    .isLength({min: 4, max: 300})
+    .withMessage('Name must be from 4-300 characters'),
 
 
+  body('authors')
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Authors must have at least one - a non empty array'),
+  
+  body('authors.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each author name must be a non empty string'),
+
+  body('genre')
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Genre must have at least one - a non empty array'),
+  
+  body('genre.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each genre must be a non empty string'),
+
+  body('availability')
+    .exists({values: 'falsy'})
+    .withMessage('Availability is required')
+    .bail()
+    .trim()
+    .escape()
+    .isInt({min: 1})
+    .withMessage('Availability must be at least 1'),
+
+  body('avg_rating')
+    .optional()
+    .trim()
+    .escape()
+    .isInt({min: 1, max: 10})
+    .withMessage('Rating must be an integer from 1-10'),
+
+  body('total_reviews')
+    .optional()
+    .trim()
+    .escape()
+    .isInt()
+    .withMessage('Total reviews must be a number'),
+
+    handleValidationErrors,
+]
+
+export const validateUpdateBooksBody = [
+  body('name')
+    .optional()
+    .trim()
+    .escape()
+    .isString()
+    .withMessage('Name must be a string')
+    .bail()
+    .isLength({min: 4, max: 300})
+    .withMessage('Name must be from 4-300 characters'),
+
+
+  body('authors')
+    .optional()
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Authors must have at least one - a non empty array'),
+  
+  body('authors.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each author name must be a non empty string'),
+
+  body('genre')
+    .optional()
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Genre must have at least one - a non empty array'),
+  
+  body('genre.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each genre must be a non empty string'),
+
+  body('availability')
+    .optional()
+    .exists({values: 'falsy'})
+    .withMessage('Availability is required')
+    .bail()
+    .trim()
+    .escape()
+    .isInt({min: 1})
+    .withMessage('Availability must be at least 1'),
+
+  body('avg_rating')
+    .optional()
+    .trim()
+    .escape()
+    .isInt({min: 1, max: 10})
+    .withMessage('Rating must be an integer from 1-10'),
+
+  body('total_reviews')
+    .optional()
+    .trim()
+    .escape()
+    .isInt()
+    .withMessage('Total reviews must be a number'),
+
+    handleValidationErrors,
+]
+
+export const validatePapersBody = [
+  body('name')
+    .exists({values: 'falsy'})
+    .withMessage('Name is required')
+    .bail()
+    .trim()
+    .escape()
+    .isString()
+    .withMessage('Name must be a string')
+    .bail()
+    .isLength({min: 4, max: 300})
+    .withMessage('Name must be from 4-300 characters'),
+
+
+  body('authors')
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Authors must have at least one - a non empty array'),
+  
+  body('authors.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each author name must be a non empty string'),
+
+  body('topic')
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Topic must have at least one - a non empty array'),
+  
+  body('topic.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each topic must be a non empty string'),
+
+  body('availability')
+    .exists({values: 'falsy'})
+    .withMessage('Availability is required')
+    .bail()
+    .trim()
+    .escape()
+    .isInt({min: 1})
+    .withMessage('Availability must be at least 1'),
+
+  body('avg_rating')
+    .optional()
+    .trim()
+    .escape()
+    .isInt({min: 1, max: 10})
+    .withMessage('Rating must be an integer from 1-10'),
+
+  body('total_reviews')
+    .optional()
+    .trim()
+    .escape()
+    .isInt()
+    .withMessage('Total reviews must be a number'),
+
+    handleValidationErrors,
+]
+
+export const validateUpdatePapersBody = [
+  body('name')
+    .optional()
+    .trim()
+    .escape()
+    .isString()
+    .withMessage('Name must be a string')
+    .bail()
+    .isLength({min: 4, max: 300})
+    .withMessage('Name must be from 4-300 characters'),
+
+
+  body('authors')
+    .optional()
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Authors must have at least one - a non empty array'),
+  
+  body('authors.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each author name must be a non empty string'),
+
+  body('topic')
+    .optional()
+    .isArray({min: 1})
+    .bail()
+    .withMessage('Topic must have at least one - a non empty array'),
+  
+  body('topic.*')
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage('Each topic must be a non empty string'),
+
+  body('availability')
+    .optional()
+    .exists({values: 'falsy'})
+    .withMessage('Availability is required')
+    .bail()
+    .trim()
+    .escape()
+    .isInt({min: 1})
+    .withMessage('Availability must be at least 1'),
+
+  body('avg_rating')
+    .optional()
+    .trim()
+    .escape()
+    .isInt({min: 1, max: 10})
+    .withMessage('Rating must be an integer from 1-10'),
+
+  body('total_reviews')
+    .optional()
+    .trim()
+    .escape()
+    .isInt()
+    .withMessage('Total reviews must be a number'),
+
+    handleValidationErrors,
+]

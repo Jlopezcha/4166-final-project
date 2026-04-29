@@ -134,30 +134,6 @@ try {
         });
 
 
-    
-        // await prisma.Academic_Papers.createMany({
-        //     data: [
-        //         {   
-        //             name: 'Algorithms for Drawing Graphs: an Annotated Bibliography',
-        //             topic: ['computer science', 'algorithms'],
-        //             availability: 40,
-        //             authors: {connect: [{id: authors[0].id}]},
-        //         },
-        //         {   
-        //             name: 'Attention is All You Need',
-        //             topic: ['computer science', 'aritifical intelligence'],
-        //             availability: 90,
-        //             authors: {connect: [{id: authors[1].id}, {id: authors[5].id}]},
-        //         },
-        //         {
-        //             name: 'Imagenet classification with deep convolutional neural networks',
-        //             topic: ['computer science', 'aritifical intelligence'],
-        //             availability: 3,
-        //             authors: {connect: [{id: authors[4].id}]},
-        //         }
-        //     ]
-        // });
-
         const authors = await prisma.Authors.findMany();
 
         await prisma.Academic_Papers.create({

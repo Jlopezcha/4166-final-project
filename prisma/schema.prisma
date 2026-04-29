@@ -64,7 +64,7 @@ model Book_Rentals{
 model Books{
     id Int @id @default(autoincrement())
     name String
-    authors Authors[]
+    authors Authors[] 
     genre String[]
     availability Int
     avg_rating Int @default(0)
@@ -101,7 +101,7 @@ model Academic_Papers{
 
 model Authors{
     id Int @id @default(autoincrement())
-    name String
+    name String @unique
     books_written Books[]
     papers_published Academic_Papers[]
 

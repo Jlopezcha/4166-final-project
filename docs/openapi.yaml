@@ -4,19 +4,83 @@ info:
   title: Task API
   version: 1.0.0
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3000/api
     description: Local development server
-  # - url: 
-  #   description: Production Server
+  - url: https://four166-final-project-2u77.onrender.com
+    description: Production Server
 
 tags:
   - name: Auth
     description: User authentication endpoints
   - name: Tech
     description: Technology endpoints
+  - name: Books
+    description: Books endpoints
+  - name: Research
+    description: Research Paper endpoints
+  - name: Users
+    description: List of or current users endpoint
   
 
 paths:
+  /users:
+    get:
+      tags:
+        - Users
+      security:
+        - bearerAuth: []  
+      summary: Returns a list of all users - ADMIN ONLY  
+      description: Returns a list of all users. Useful for admins only to keep track of head count
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDetails'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden' 
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      security:
+        - bearerAuth: []  
+      summary: Returns current user token time info    
+      description: Returns the current user's id, role and when their JWT will expire 
+      responses:
+        '200':
+          description: User token timestamp
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  role:
+                    type: string
+                  iat:
+                    type: string
+                  exp:
+                    type: string
+                example:
+                  id: 1
+                  role: ADMIN
+                  iat: 1777439536
+                  exp: 1777443136
+
+                  
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden' 
+
   /auth/login:
     post:
       tags:
@@ -68,7 +132,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthCredentials'
+              $ref: '#/components/schemas/SignUpCredentials'
       responses:
         '201':
           description: Sign up successfully
@@ -106,7 +170,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/Technology'
     post:
-      summary: Create a new technology item
+      summary: Create a new technology item - ADMIN only
+      security:
+        - bearerAuth: []
       tags:
         - Tech
       requestBody:
@@ -163,12 +229,12 @@ paths:
         - bearerAuth: []
       tags:
         - Tech
-      summary: Update a post by ID
-      description: Update a single blog post by its ID
+      summary: Update a technology product by ID - ADMIN only
+      description: Update a single technology product by its ID
       parameters:
         - $ref: '#/components/parameters/ResourceId'
       requestBody:
-        description: Fields to update for the post. At least one of "title" or "content" must be provided.
+        description: Fields to update for the technology.
         required: true
         content:
           application/json:
@@ -176,7 +242,7 @@ paths:
               $ref: '#/components/schemas/Technology'
       responses:
         '200':
-          description: Post updated successfully
+          description: Technology product updated successfully
           content:
             application/json:
               schema:
@@ -193,7 +259,7 @@ paths:
                     items:
                       type: string
                 example:
-                  errors: ["ID must be a positive integer", "Title must be at least 3 characters"]
+                  errors: ["Product name must be at least 4 characters", "Availability must be a positive number"]
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -205,8 +271,8 @@ paths:
         - bearerAuth: []
       tags:
         - Tech
-      summary: Delete a tech by ID
-      description: Delete a single tech post by its ID.
+      summary: Delete a tech by ID - ADMIN only
+      description: Delete a single tech product by its ID.
       parameters:
         - $ref: '#/components/parameters/ResourceId'
       responses:
@@ -221,9 +287,450 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /technology/rent/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Tech
+      summary: User rents a technology by ID
+      description: User rents a technology by its product ID. It is successful if the product is available (availability amount > 0) and if the user is not actively renting a technology - only one limit per user
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Rental transaction with the product id and user id attached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Technology_Rentals'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+
+  /technology/review/{id}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Tech
+      summary: User rates a technology by ID
+      description: User rates a technology by its product ID. The rating must be from 1-10
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+              properties:
+                rating:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 10
+                  example: 8
+      responses:
+        '200':
+          description: Updated technology with new rating
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Technology'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
 
 
+  /books:
+    get:
+      tags:
+        - Books
+      summary: Get all books
+      description: Retrieve a list of all books
+      responses:
+        '200':
+          description: A list of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      summary: Create a new book record - ADMIN only
+      security:
+        - bearerAuth: []
+      tags:
+        - Books
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: Bad request due to invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  errors:
+                    - 'Product name must be at least 4 characters'
 
+  /books/{id}:
+    get:
+      tags:
+        - Books
+      summary: Get a Book by ID
+      description: Retrieve a single book by its ID.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: A single book product with its contents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Books
+      summary: Update a book product by ID - ADMIN only
+      description: Update a single book product by its ID
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        description: Fields to update for the book.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '200':
+          description: Book product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: Bad request due to invalid input or invalid ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  errors: ["Product name must be at least 4 characters", "Availability must be a positive number"]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden' 
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Books
+      summary: Delete a book by ID - ADMIN only
+      description: Delete a single book product by its ID.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '204':
+          description: Book deleted successfully
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /books/rent/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Books
+      summary: User rents a book by ID
+      description: User rents a book by its product ID. It is successful if the product is available (availability amount > 0) and if the user did not exceed renting limit of 10
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Rental transaction with the product id and user id attached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book_Rentals'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+
+  /books/review/{id}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Books
+      summary: User rates a book by ID
+      description: User rates a book by its product ID. The rating must be from 1-10
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+              properties:
+                rating:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 10
+                  example: 8
+      responses:
+        '200':
+          description: Book with updated rating
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+
+
+  /research:
+    get:
+      tags:
+        - Research
+      summary: Get all research papers
+      description: Retrieve a list of all research/academic papers
+      responses:
+        '200':
+          description: A list of papers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Paper'
+    post:
+      summary: Create a new research paper record - ADMIN only
+      security:
+        - bearerAuth: []
+      tags:
+        - Research
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Paper'
+      responses:
+        '201':
+          description: Paper created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paper'
+        '400':
+          description: Bad request due to invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  errors:
+                    - 'Product name must be at least 4 characters'
+
+  /research/{id}:
+    get:
+      tags:
+        - Research
+      summary: Get a paper by ID
+      description: Retrieve a single paper by its ID.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: A single research paper with its contents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paper'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Research
+      summary: Update a paper by ID - ADMIN only
+      description: Update a single research paper by its ID
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        description: Fields to update for the paper.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Paper'
+      responses:
+        '200':
+          description: Research paper updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paper'
+        '400':
+          description: Bad request due to invalid input or invalid ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                example:
+                  errors: ["Paper name must be at least 4 characters", "Availability must be a positive number"]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden' 
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Research
+      summary: Delete a paper by ID - ADMIN only
+      description: Delete a single paper by its ID.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '204':
+          description: Paper deleted successfully
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /research/rent/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Research
+      summary: User rents a paper by ID
+      description: User rents a research paper by its product ID. It is successful if the product is available (availability amount > 0) and if the user did not exceed renting limit of 10
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Rental transaction with the product id and user id attached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paper_Rentals'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+
+  /research/review/{id}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Research
+      summary: User rates a paper by ID
+      description: User rates a paper by its product ID. The rating must be from 1-10
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+              properties:
+                rating:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 10
+                  example: 8
+      responses:
+        '200':
+          description: Paper with updated rating
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paper'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/InvalidId'
 
 components:
   schemas:
@@ -249,6 +756,94 @@ components:
           readOnly: true
           example: 'USER'
 
+    UserDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          example: Alice
+        email:
+          type: string
+          readOnly: true
+          example: 'test@test.com'
+        role:
+          type: string
+          readOnly: true
+          example: 'USER'
+        is_renting_tech:
+          type: boolean
+          example: false
+        num_books_renting:
+          type: integer
+          example: 3
+        num_papers_renting:
+          type: integer
+          example: 4
+
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          example: 'The C Programming Language'
+        authors:
+          type: array
+          items: 
+            type: object author
+          example: ['Dennis M Ritchie', 'Brian W. Kernighan']
+        genre:
+          type: array
+          items:
+            type: string
+          example: ['computer science', 'programming', 'nonfiction']
+        availability:
+          type: integer
+          example: 20
+        avg_rating:
+          type: integer
+          example: 8
+        total_reviews:
+          type: integer
+          example: 7
+
+    Paper:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          example: 'Attention is All You Need'
+        authors:
+          type: array
+          items: 
+            type: object author
+          example: ['Ashish Vaswani', 'Niki Parmar']
+        topic:
+          type: array
+          items:
+            type: string
+          example: ['computer science', 'artificial intelligence', 'nonfiction']
+        availability:
+          type: integer
+          example: 20
+        avg_rating:
+          type: integer
+          example: 8
+        total_reviews:
+          type: integer
+          example: 7
+
     Technology:
       type: object
       properties:
@@ -261,6 +856,8 @@ components:
           example: 'Apple Ipad Air (M4)'
         category:
           type: array
+          items: 
+            type: string
           example: ['entertainment', 'educational']
         availability:
           type: integer
@@ -274,7 +871,66 @@ components:
         total_reviews:
           type: integer
           example: 7
+    
+    Technology_Rentals:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        user_id:
+          type: integer
+          example: 3
+        tech_id:
+          type: integer
+          example: 2
+        rent_start:
+          type: date
+          example: '2026-03-04T20:30:00Z'
+        rent_end:
+          type: date 
+          example: '2026-05-04T20:30:00Z'
         
+    Book_Rentals:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        user_id:
+          type: integer
+          example: 3
+        book_id:
+          type: integer
+          example: 2
+        rent_start:
+          type: date
+          example: '2026-03-04T20:30:00Z'
+        rent_end:
+          type: date 
+          example: '2026-05-04T20:30:00Z'
+
+    Paper_Rentals:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        user_id:
+          type: integer
+          example: 3
+        paper_id:
+          type: integer
+          example: 2
+        rent_start:
+          type: date
+          example: '2026-03-04T20:30:00Z'
+        rent_end:
+          type: date 
+          example: '2026-05-04T20:30:00Z'
 
     AuthCredentials:
       type: object
@@ -284,6 +940,20 @@ components:
         password:
           type: string
       example:
+        email: 'alice@test.com'
+        password: 'alice1234'
+    
+    SignUpCredentials:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        name: 'Alice'
         email: 'user@example.com'
         password: 'password123'
 

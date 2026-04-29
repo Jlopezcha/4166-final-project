@@ -49,6 +49,14 @@ export async function updateTechnologyHandler(req, res) {
     product_year = Number(product_year);
   }
 
+  if(avg_rating){
+    avg_rating = Number(avg_rating);
+  }
+
+  if(total_reviews){
+    total_reviews = Number(total_reviews);
+  }
+
   const newProduct = await updateProduct(id, {product_name, category, availability, product_year, avg_rating, total_reviews});
   res.status(200).json(newProduct);
 }

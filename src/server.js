@@ -4,6 +4,8 @@ import morgan from 'morgan';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import techRoutes from './routes/technologyRoutes.js';
+import bookRoutes from './routes/bookRoutes.js';
+import researchRoutes from './routes/researchRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import yaml from 'js-yaml';
 import fs from 'fs';
@@ -14,17 +16,24 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('tiny'));
 
-// let specs;
-// try {
-//   specs = yaml.load(fs.readFileSync('./docs/openapi.yaml', 'utf8'));
-// } catch (error) {
-//   console.log('Failed to load OpenAPI specification', error);
-//   process.exit(1);
-// }
+let specs;
+try {
+  specs = yaml.load(fs.readFileSync('./docs/openapi.yaml', 'utf8'));
+} catch (error) {
+  console.log('Failed to load OpenAPI specification', error);
+  process.exit(1);
+}
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/technology', techRoutes);
+app.use('/api/books', bookRoutes);
+app.use('/api/research', researchRoutes);
 
 app.use((req, res, next) => {
   const err = new Error('Not Found');
