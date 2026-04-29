@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+  
+}
+
+datasource db {
+  provider = "postgresql"
+
+}
+
+model Users {
+ id Int @id @default(autoincrement())
+ name String
+ email String @unique
+ password String
+ role Role @default(USER)
+ is_renting_tech Boolean @default(false)
+ num_books_renting Int @default(0)
+ num_papers_renting Int @default(0)
+ 
+ book_rentals Book_Rentals[]
+ paper_rentals Academic_Rentals[]
+ technology_rentals Technology_Rentals[] 
+ @@map("users")
+}
+
+model Technology_Rentals{
+    id Int @id @default(autoincrement())
+    rented_by Users @relation(fields: [user_id], references: [id])
+    user_id Int
+    equipment_id Technology @relation(fields: [tech_id], references: [id])
+    tech_id Int
+    rent_start DateTime
+    rent_end DateTime
+    @@map("technologyRentals")
+}
+
+model Technology{
+    id Int @id @default(autoincrement())
+    product_name String
+    category String[]
+    availability Int
+    product_year Int
+    avg_rating Int @default(0)
+    total_reviews Int @default(0)
+
+    rentals Technology_Rentals[]
+    @@map("technology")
+}
+
+model Book_Rentals{
+    id Int @id @default(autoincrement())
+    rented_by Users @relation(fields: [user_id], references: [id])
+    user_id Int
+    book Books @relation(fields: [book_id], references: [id])
+    book_id Int
+    rent_start DateTime
+    rent_end DateTime
+
+    @@map("bookRentals")
+}
+
+model Books{
+    id Int @id @default(autoincrement())
+    name String
+    authors Authors[]
+    genre String[]
+    availability Int
+    avg_rating Int @default(0)
+    total_reviews Int @default(0)
+
+    rentals Book_Rentals[]
+    @@map("books")
+}
+
+model Academic_Rentals{
+    id Int @id @default(autoincrement())
+    rented_by Users @relation(fields: [user_id], references: [id])
+    user_id Int
+    paper Academic_Papers @relation(fields: [paper_id], references: [id])
+    paper_id Int
+    rent_start DateTime
+    rent_end DateTime
+
+    @@map("academicRentals")
+}
+
+model Academic_Papers{
+    id Int @id @default(autoincrement())
+    name String
+    authors Authors[]
+    topic String[]
+    availability Int
+    avg_rating Int @default(0)
+    total_reviews Int @default(0)
+    
+    rentals Academic_Rentals[]
+    @@map("academicPapers")
+}
+
+model Authors{
+    id Int @id @default(autoincrement())
+    name String
+    books_written Books[]
+    papers_published Academic_Papers[]
+
+    @@map("authors")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
